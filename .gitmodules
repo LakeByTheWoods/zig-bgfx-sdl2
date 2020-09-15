@@ -1,0 +1,9 @@
+[submodule "submodules/bgfx"]
+	path = submodules/bgfx
+	url = https://github.com/bkaradzic/bgfx.git
+[submodule "submodules/bx"]
+	path = submodules/bx
+	url = https://github.com/LakeByTheWoods/bx.git
+[submodule "submodules/bimg"]
+	path = submodules/bimg
+	url = https://github.com/bkaradzic/bimg.git
