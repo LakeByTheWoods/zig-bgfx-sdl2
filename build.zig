@@ -1,4 +1,7 @@
-const Builder = @import("std").build.Builder;
+const std = @import("std");
+
+const Builder = std.build.Builder;
+const builtin = std.builtin;
 
 pub fn build(b: *Builder) void {
     const target = b.standardTargetOptions(.{});
@@ -12,9 +15,12 @@ pub fn build(b: *Builder) void {
 
     exe.linkLibC();
     exe.linkSystemLibrary("c++");
-    exe.linkSystemLibrary("X11");
     exe.linkSystemLibrary("SDL2");
-    exe.linkSystemLibrary("GL");
+
+    if (builtin.os.tag == .linux) {
+        exe.linkSystemLibrary("GL");
+        exe.linkSystemLibrary("X11");
+    }
 
     comptime const cxx_options = [_][]const u8{
         "-fno-strict-aliasing",
@@ -30,6 +36,16 @@ pub fn build(b: *Builder) void {
     exe.addIncludeDir(bx ++ "include/");
     exe.addIncludeDir(bx ++ "3rdparty/");
     exe.addCSourceFile(bx ++ "src/amalgamated.cpp", &cxx_options);
+    if (builtin.os.tag == .macosx) {
+        exe.addIncludeDir(bx ++ "include/compat/osx/");
+        exe.addFrameworkDir("/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks");
+        exe.addSystemIncludeDir("/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include");
+        exe.addSystemIncludeDir("/usr/local/Cellar/llvm/10.0.1/lib/clang/10.0.1/include");
+        exe.linkFramework("Cocoa");
+        exe.linkFramework("CoreFoundation");
+        exe.linkFramework("OpenGL");
+        exe.linkFramework("Metal");
+    }
 
     // bimg
     comptime const bimg = "submodules/bimg/";
@@ -59,7 +75,11 @@ pub fn build(b: *Builder) void {
     exe.addIncludeDir(bgfx ++ "3rdparty/dxsdk/include/");
     exe.addIncludeDir(bgfx ++ "3rdparty/khronos/");
     exe.addIncludeDir(bgfx ++ "src/");
-    exe.addCSourceFile(bgfx ++ "src/amalgamated.cpp", &cxx_options);
+    if (builtin.os.tag == .macosx) {
+        exe.addCSourceFile(bgfx ++ "src/amalgamated.mm", &cxx_options);
+    } else {
+        exe.addCSourceFile(bgfx ++ "src/amalgamated.cpp", &cxx_options);
+    }
 
     exe.setTarget(target);
     exe.setBuildMode(mode);

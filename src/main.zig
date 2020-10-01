@@ -15,11 +15,19 @@ usingnamespace @cImport({
     @cInclude("SDL2/SDL.h");
     @cInclude("SDL2/SDL_syswm.h");
 
-    @cInclude("GL/gl.h");
-    @cInclude("GL/glx.h");
-    @cInclude("GL/glext.h");
-
     @cInclude("bgfx/c99/bgfx.h");
+
+    switch (builtin.os.tag) {
+        .macosx => {
+            @cInclude("OpenGL/gl.h");
+            @cInclude("OpenGL/glext.h");
+        },
+        else => {
+            @cInclude("GL/gl.h");
+            @cInclude("GL/glx.h");
+            @cInclude("GL/glext.h");
+        },
+    }
 });
 
 fn sdlSetWindow(window: *SDL_Window) !void {
